@@ -1,0 +1,9 @@
+{
+  "name": "agent-view",
+  "version": "1.0.0",
+  "description": "Live force-directed view of Claude Code agents, their tools and subagents. Zero dependencies.",
+  "type": "module",
+  "main": "server.js",
+  "scripts": { "start": "node server.js" },
+  "license": "MIT"
+}
