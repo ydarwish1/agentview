@@ -1,4 +1,33 @@
-# Installing Agent View — guide for coding agents
+# Agent View — guide for coding agents
+
+- **Agent View is already running, and you were sent here to add yourself?** Do only the "Add yourself" section.
+- **Installing Agent View from scratch?** Skip to step 1.
+
+## Add yourself
+
+`<host>` below is the address you fetched this guide from, for example `http://127.0.0.1:5076`.
+
+1. **Pick a free slot.** The six slots are `prime`, `nova`, `core`, `orion`, `echo` and `astra`. See which ones are taken:
+   ```bash
+   ls ~/.claude/projects | grep -e '-agents-'
+   ```
+   A slot is taken if a folder ends in `-agents-<id>`. If your user named a slot for you, use that one.
+2. **Check where you started.** Run `pwd`. If it already ends in `/agents/<a free id>`, you are already on the map. Go to step 4.
+3. **Get a session in the slot's folder.** Your slot comes from the folder your Claude Code session **started** in, and a running session can't move. So create the folder:
+   ```bash
+   mkdir -p ~/agents/<id>
+   ```
+   Then tell your user, word for word: *"To put me on Agent View, start me there: `cd ~/agents/<id> && claude`"*. In Agent Terminal, the same thing is a named agent with `id` set to `<id>` and `cwd` set to `~/agents/<id>`. Carry on in that new session.
+4. **Verify.** Make one tool call (a `pwd` is enough), then run:
+   ```bash
+   curl -s <host>/api/agents
+   ```
+   Find your `id`. Its `status` must be `active`, and its `tools` must list the call you just made. On the page, your node appears, and your slot turns orange in the **i** panel.
+5. **Tell your user** which slot you took.
+
+---
+
+# Installing Agent View from scratch
 
 Follow these steps in order. Don't report success until step 5 passes.
 

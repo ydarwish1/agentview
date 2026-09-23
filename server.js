@@ -20,6 +20,7 @@ const CONSOLE_URL = process.env.CONSOLE_URL || 'http://127.0.0.1:5050/api/agent-
 const PROJECTS_ROOT = (process.env.PROJECTS_ROOT || path.join(os.homedir(), 'projects')).replace(/\/+$/, '');
 const BRAIN_POOL = (process.env.BRAIN_POOL || path.join(os.homedir(), '.agent-memory')).replace(/\/+$/, '');
 const PAGE = path.join(__dirname, 'index.html');
+const GUIDE = path.join(__dirname, 'INSTALL-FOR-AGENTS.md');
 
 const AGENTS = [
   { id: 'prime', name: 'Prime' },
@@ -954,6 +955,18 @@ const server = http.createServer(async (req, res) => {
         'Cache-Control': 'no-store',
         'X-Content-Type-Options': 'nosniff',
         'Content-Security-Policy': CSP,
+        'Content-Length': body.length,
+      });
+      return res.end(req.method === 'HEAD' ? undefined : body);
+    }
+
+    if (pathname === '/INSTALL-FOR-AGENTS.md') {
+      let body;
+      try { body = fs.readFileSync(GUIDE); } catch { return sendText(req, res, 404, 'INSTALL-FOR-AGENTS.md is missing next to server.js'); }
+      res.writeHead(200, {
+        'Content-Type': 'text/markdown; charset=utf-8',
+        'Cache-Control': 'no-store',
+        'X-Content-Type-Options': 'nosniff',
         'Content-Length': body.length,
       });
       return res.end(req.method === 'HEAD' ? undefined : body);

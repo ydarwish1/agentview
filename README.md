@@ -40,6 +40,10 @@ claude
 
 Claude Code saves that session's transcript under `~/.claude/projects/-…-agents-nova/`, and Agent View picks it up within a few seconds.
 
+**The easy way:** click **i** (top right), press **COPY**, and paste the line into the agent you want to add. It fetches the guide from the running Agent View, takes a free slot, and appears on the map. Free slots are grey, and slots on the map are orange.
+
+![The i panel: a ready-to-paste line for your agent, and which of the six slots are free](docs/add-agent.png)
+
 **Having a coding agent install this?** Tell it: *"Read INSTALL-FOR-AGENTS.md and install Agent View."*
 
 ## Settings
@@ -66,6 +70,7 @@ PORT=5076 TRANSCRIPTS_DIR="$HOME/.claude/projects" node server.js
 | `/api/agents` | A JSON snapshot of every agent |
 | `/api/stream` | Server-sent events, sent on every change |
 | `/api/health` | `{ ok, transcripts, console, … }` |
+| `/INSTALL-FOR-AGENTS.md` | The agent guide, which the **i** panel's copied line fetches |
 
 ## Privacy
 

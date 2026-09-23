@@ -39,6 +39,32 @@
   #demoBtn:active { box-shadow:1px 1px 0 var(--cream); transform:translate(2px,2px); }
   #demoBtn.on { background:var(--accent); border-color:var(--accent); color:#fff; box-shadow:3px 3px 0 var(--cream); }
 
+  #infoBtn { font-family:'Doto','Outfit',monospace; font-weight:900; font-size:15px; width:36px; height:33px; padding:0;
+             border:2px solid var(--cream); background:var(--panel); color:var(--cream); border-radius:0;
+             box-shadow:3px 3px 0 var(--cream); cursor:var(--cur-hex-fill), pointer; line-height:1; }
+  #infoBtn:active { box-shadow:1px 1px 0 var(--cream); transform:translate(2px,2px); }
+  #infoBtn.on { background:var(--accent); border-color:var(--accent); color:#fff; }
+  #info { position:fixed; top:64px; right:20px; z-index:7; width:350px; max-width:calc(100vw - 32px);
+          background:var(--panel); border:1px solid rgba(var(--ink-rgb),.28); box-shadow:5px 5px 0 var(--accent);
+          padding:16px 18px 16px; display:none; font-size:12px; line-height:1.5; }
+  #info.open { display:block; }
+  #info b.t { display:block; font-family:'Doto','Outfit',monospace; font-weight:900; font-size:15px; letter-spacing:.16em; margin:0 26px 12px 0; }
+  #info .k { font-size:10px; letter-spacing:2px; text-transform:uppercase; color:var(--mute); margin:14px 0 6px; }
+  #info p { margin:0 0 8px; color:var(--cream); }
+  #info p.m { color:var(--mute); font-size:11px; margin:6px 0 0; }
+  #info pre { white-space:pre-wrap; word-break:break-word; margin:0; padding:10px; background:var(--disc);
+              border:1px solid rgba(var(--ink-rgb),.18); font:11px/1.45 ui-monospace,Menlo,monospace; color:var(--cream); }
+  #info .copy { margin-top:10px; font-family:'Doto','Outfit',monospace; font-weight:900; font-size:11px; letter-spacing:.18em;
+                padding:8px 12px 7px; border:0; border-radius:0; background:var(--accent); color:#fff;
+                box-shadow:3px 3px 0 var(--cream); cursor:var(--cur-hex-fill), pointer; line-height:1; }
+  #info .copy:active { box-shadow:1px 1px 0 var(--cream); transform:translate(2px,2px); }
+  #info .slots { display:flex; flex-wrap:wrap; gap:6px; }
+  #info .slots span { padding:3px 8px; border:1px solid rgba(var(--ink-rgb),.25); font-size:11px; color:var(--mute); }
+  #info .slots span.live { border-color:var(--accent); color:var(--accent); }
+  #info .x { position:absolute; top:8px; right:10px; border:0; background:none; color:var(--mute); font-size:18px;
+             line-height:1; padding:4px 6px; cursor:var(--cur-hex-fill), pointer; font-family:'Outfit',sans-serif; }
+  #info .x:hover { color:var(--cream); }
+
   #card { position:fixed; top:64px; right:20px; z-index:5; width:300px; max-width:calc(100vw - 40px);
           background:var(--panel); border:1px solid rgba(var(--ink-rgb),.28); box-shadow:5px 5px 0 var(--accent);
           padding:16px 18px 14px; display:none; }
@@ -114,7 +140,8 @@
   <svg class="hexlogo" viewBox="0 0 48 48" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M24 6l18 10v16L24 42 6 32V16Z"/><path d="M24 6v16l18 10" opacity="0.5"/><path d="M24 22L6 32" opacity="0.5"/></svg>
   <b>AGENT VIEW</b>
 </div>
-<div id="top"><button id="demoBtn" type="button" aria-pressed="false">DEMO</button></div>
+<div id="top"><button id="infoBtn" type="button" aria-label="How to add an agent" aria-expanded="false">i</button><button id="demoBtn" type="button" aria-pressed="false">DEMO</button></div>
+<div id="info" role="dialog" aria-label="add an agent"></div>
 <div id="card" role="dialog" aria-label="agent"></div>
 <div id="legend"></div>
 <div id="tip"></div>
@@ -1009,7 +1036,7 @@ function fillSubCard(n) {
 }
 const TERM_PORT = 5075;
 function termUrl(id) { return location.protocol + '//' + location.hostname + ':' + TERM_PORT + '/?agent=' + encodeURIComponent(id); }
-function openCard(a) { CARD = a.id; fillCard(a); card.classList.add('open'); }
+function openCard(a) { setInfo(false); CARD = a.id; fillCard(a); card.classList.add('open'); }
 function closeCard() { CARD = null; card.classList.remove('open'); }
 addEventListener('keydown', ev => { if (ev.key === 'Escape' && CARD) closeCard(); });
 
@@ -1195,6 +1222,61 @@ function setDemo(on) {
   }
 }
 demoBtn.addEventListener('click', () => setDemo(!DEMO));
+
+const infoBtn = document.getElementById('infoBtn');
+const info = document.getElementById('info');
+let infoSlots = null, infoTimer = 0;
+function el(tag, cls, text) { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+function infoPrompt() {
+  return 'Add yourself to Agent View. Run: curl -s ' + location.origin + '/INSTALL-FOR-AGENTS.md' +
+         ' and follow the "Add yourself" section.';
+}
+function copyFallback(t) {
+  const ta = el('textarea'); ta.value = t; ta.style.position = 'fixed'; ta.style.opacity = '0';
+  document.body.appendChild(ta); ta.select();
+  let ok = false; try { ok = document.execCommand('copy'); } catch { ok = false; }
+  ta.remove(); return ok;
+}
+function copyText(t, btn) {
+  const done = ok => { btn.textContent = ok ? 'COPIED' : 'SELECT THE TEXT ABOVE'; setTimeout(() => { btn.textContent = 'COPY'; }, 1800); };
+  if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(t).then(() => done(true), () => done(copyFallback(t)));
+  else done(copyFallback(t));
+}
+function fillSlots() {
+  if (!infoSlots) return;
+  const live = new Set(((LIVE_SNAP && LIVE_SNAP.agents) || []).filter(a => a.status !== 'idle').map(a => a.id));
+  infoSlots.textContent = '';
+  AG_ORDER.forEach(id => infoSlots.appendChild(el('span', live.has(id) ? 'live' : '', id)));
+}
+function fillInfo() {
+  info.textContent = '';
+  const x = el('button', 'x', '×'); x.type = 'button'; x.setAttribute('aria-label', 'close');
+  x.addEventListener('click', () => setInfo(false));
+  info.appendChild(x);
+  info.appendChild(el('b', 't', 'ADD AN AGENT'));
+  info.appendChild(el('p', '', 'Paste this into the coding agent you want on the map:'));
+  const pre = el('pre', '', infoPrompt());
+  info.appendChild(pre);
+  const cp = el('button', 'copy', 'COPY'); cp.type = 'button';
+  cp.addEventListener('click', () => copyText(pre.textContent, cp));
+  info.appendChild(cp);
+  info.appendChild(el('div', 'k', 'What happens'));
+  info.appendChild(el('p', 'm', 'It reads the guide, takes a free slot and runs from agents/<slot>. It shows up here within a few seconds.'));
+  info.appendChild(el('div', 'k', 'Slots'));
+  infoSlots = el('div', 'slots');
+  info.appendChild(infoSlots);
+  info.appendChild(el('p', 'm', 'Orange = on the map right now.'));
+  fillSlots();
+}
+function setInfo(on) {
+  info.classList.toggle('open', on);
+  infoBtn.classList.toggle('on', on);
+  infoBtn.setAttribute('aria-expanded', on ? 'true' : 'false');
+  clearInterval(infoTimer); infoTimer = 0;
+  if (on) { closeCard(); fillInfo(); infoTimer = setInterval(fillSlots, 2000); }
+}
+infoBtn.addEventListener('click', () => setInfo(!info.classList.contains('open')));
+addEventListener('keydown', ev => { if (ev.key === 'Escape' && info.classList.contains('open')) setInfo(false); });
 
 (function buildLegend() {
   const lg = document.getElementById('legend');
