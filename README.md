@@ -8,6 +8,14 @@ Each agent is a node. Every tool it used recently hangs off it as a smaller node
 - Node 22+, **no dependencies**, no build step
 - Read-only: it binds `127.0.0.1`, only serves GET, and never writes anything
 
+![Six agents live: each with its recent tools, two running subagents, and LINK lines between agents on the same project](docs/live.png)
+
+*Live, with no status feed connected. The legend reads CONSOLE OFFLINE, and agents are lit from their transcripts.*
+
+| Click an agent | DEMO mode |
+|---|---|
+| ![The agent card: model, harness, context and an OPEN TERMINAL button](docs/card.png) | ![The scripted demo fleet: all six busy, with subagents and delegation packets](docs/demo.png) |
+
 ## Quick start
 
 ```bash
@@ -42,7 +50,7 @@ Every setting is an environment variable, and all of them are optional.
 |---|---|---|
 | `PORT` | `5076` | The port to listen on |
 | `TRANSCRIPTS_DIR` | `~/.claude/projects` | Where Claude Code keeps its transcripts |
-| `CONSOLE_URL` | `http://127.0.0.1:5050/api/agent-status` | Optional status feed. If nothing answers there, every agent shows as idle, but its tools still show. |
+| `CONSOLE_URL` | `http://127.0.0.1:5050/api/agent-status` | Optional status feed that supplies each agent's status and task. If nothing answers, an agent counts as active while its transcript was written in the last 15 minutes, and the legend reads CONSOLE OFFLINE. |
 | `PROJECTS_ROOT` | `~/projects` | If two agents work inside the same folder here, a LINK line connects them |
 | `BRAIN_POOL` | `~/.agent-memory` | Optional memory folder. Reads from it are drawn as a Memory node |
 

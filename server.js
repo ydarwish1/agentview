@@ -798,6 +798,7 @@ function subsFor(agentId, sessions, now) {
 
 async function buildSnapshot(now, fleetMaxAge) {
   const f = await fleet(now, fleetMaxAge);
+  const scan = probeTranscripts(now);
   const rows = [];
   const seen = new Set();
   if (f.ok) {
@@ -811,10 +812,11 @@ async function buildSnapshot(now, fleetMaxAge) {
   }
   for (const a of AGENTS) {
     if (seen.has(a.id)) continue;
-    rows.push({ id: a.id, name: a.name, status: 'idle', lastTask: '' });
+    const st = f.ok ? null : scan.best.get(a.id);
+    const fresh = !!st && now - st.mtimeMs <= TRAIL_FRESH_MS;
+    rows.push({ id: a.id, name: a.name, status: fresh ? 'active' : 'idle', lastTask: '' });
   }
 
-  const scan = probeTranscripts(now);
   transcriptsOk = scan.ok;
   const stats = scan.best;
   const sessions = scan.sessions;

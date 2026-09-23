@@ -27,7 +27,7 @@ Expected output:
 ```
 
 - `transcripts=false` means the process can't read `TRANSCRIPTS_DIR`. Fix the path or the file permissions.
-- `console=false` is harmless. It only means nothing is serving the optional status feed.
+- `console=false` is fine. With no status feed, an agent counts as active while its transcript was written in the last 15 minutes. The page legend then reads CONSOLE OFFLINE.
 
 To keep the server running, use your normal process manager, such as systemd, pm2 or tmux.
 
@@ -71,7 +71,7 @@ curl -s http://127.0.0.1:5076/api/agents
 
 An empty `tools` array means the transcript wasn't matched, or is more than 15 minutes old. Go back to step 4.
 
-**Look at it.** Open **http://127.0.0.1:5076** in a browser, or take a screenshot with a headless browser if you have one. Check that:
+**Look at it.** Open **http://127.0.0.1:5076** in a browser, or take a screenshot with a headless browser if you have one. It should look like `docs/live.png`, and clicking an agent should look like `docs/card.png`. Check that:
 - your agent's node has a name label
 - the tools you just used hang off it as smaller nodes
 - the tool in use right now glows orange
@@ -92,7 +92,7 @@ Tell your user:
 |---|---|
 | Page says `NO TRANSCRIPT ACCESS` | The server can't read the `.jsonl` files. Run it as a user who can. |
 | An agent never appears | Its session wasn't started from `…/agents/<id>`. See step 4. |
-| Everyone is idle but working | There's no status feed at `CONSOLE_URL`. Tools and subagents still show. |
+| An agent is grey (idle) but working | Its transcript is more than 15 minutes old, or a status feed at `CONSOLE_URL` reports it as idle. |
 | `PORT must be a whole number` | Set `PORT` to a number from 1 to 65535. |
 
 The server always binds `127.0.0.1`. To reach it from another machine, use an SSH tunnel or a reverse proxy.
